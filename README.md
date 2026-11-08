@@ -1,18 +1,13 @@
-# LA10 – Your Own Lookup Table
-## Part G – Guide Questions
+## Part G: Reflection
 
-### 1. Which column did you convert into a separate lookup table, and why?
+### 1. Why is route model binding important?
 
-I converted the `genre` column into a separate `genres` lookup table. This avoids storing repeated genre names in the `movies` table and allows each movie to reference a genre using a foreign key, `genre_id`.
+Route model binding allows Laravel to automatically retrieve the movie record using its ID. The model type hint and parameter name must match the route parameter `{movie}` so Laravel can correctly identify the record.
 
-### 2. How many queries were displayed in Screenshot 6, and why?
+### 2. What happens when Delete is implemented as a link?
 
-Screenshot 6 displayed **7 queries**. The application executed one query to retrieve the movies, one query to retrieve the genre list, and additional queries to retrieve the genre of each movie because the relationship was not yet eager loaded.
+A normal link sends a GET request, while the destroy route requires a DELETE request. Clicking the link will not delete the movie because the HTTP method does not match the route.
 
-### 3. What would happen if the relationship method in the Movie model were plural instead of singular?
+### 3. Why are old() and fallback values important in an edit form?
 
-If the relationship method were named `genres()` instead of `genre()`, calling `$item->genre` or `with('genre')` would fail because Laravel would not find a relationship with that name. The relationship method name used in the controller and Blade view must match the method defined in the model.
-
-## Author
-
-Jeff Tud
+The `old()` function preserves the values entered by the user when validation fails. Its second argument provides the existing movie value when there is no previous input, allowing the edit form to display the saved record details.

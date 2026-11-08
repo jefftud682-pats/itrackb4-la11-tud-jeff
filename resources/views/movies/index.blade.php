@@ -15,7 +15,7 @@
 
     <p>
         <strong>Genre:</strong>
-        {{ $genre === 'all' ? 'All Genres' : ($genres->firstWhere('id', $genre)?->name ?? 'Unknown') }}
+        {{ $genre === 'all' ? 'All Genres' : (is_object($genre) ? $genre->name : ($genres->firstWhere('id', (int) $genre)?->name ?? 'Unknown')) }}
         |
         <strong>Director:</strong> {{ $director }}
     </p>
@@ -51,14 +51,14 @@
     @endphp
 
     <a href="{{ route('movies.index', array_filter([
-        'genre' => $genre !== 'all' ? $genre : null,
+        'genre' => $genre !== 'all' ? (is_object($genre) ? $genre->id : $genre) : null,
     ])) }}">
         All Directors
     </a>
 
     @foreach ($directors as $itemDirector)
         <a href="{{ route('movies.index', array_filter([
-            'genre' => $genre !== 'all' ? $genre : null,
+            'genre' => $genre !== 'all' ? (is_object($genre) ? $genre->id : $genre) : null,
             'director' => $itemDirector,
         ])) }}">
             {{ $itemDirector }}
@@ -79,6 +79,7 @@
             <th>Director</th>
             <th>Genre</th>
             <th>Year</th>
+            <th>Actions</th>
         </tr>
 
         @forelse ($movies as $item)
@@ -87,7 +88,7 @@
                 <td>{{ $item['id'] }}</td>
 
                 <td>
-                    <a href="{{ route('movies.show', $item['id']) }}">
+                    <a href="{{ route('movies.show', $item) }}">
                         {{ $item['title'] }}
                     </a>
                 </td>
@@ -102,10 +103,26 @@
                         <span class="badge bg-primary">Featured</span>
                     @endif
                 </td>
+
+                <td>
+                    <a href="{{ route('movies.edit', $item) }}">Edit</a> |
+
+                    <form action="{{ route('movies.destroy', $item) }}"
+                          method="POST"
+                          style="display: inline;"
+                          onsubmit="return confirm('Delete this record?')">
+                        @csrf
+                        @method('DELETE')
+
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Delete
+                        </button>
+                    </form>
+                </td>
             </tr>
         @empty
             <tr>
-                <td colspan="6">
+                <td colspan="7">
                     No movies are available in the collection.
                 </td>
             </tr>

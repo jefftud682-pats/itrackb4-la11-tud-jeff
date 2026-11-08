@@ -16,33 +16,35 @@ class MovieController extends Controller
         'Erik Matti',
     ];
 
-    public function index(Request $request)
-    {
-        DB::enableQueryLog();
+    
+public function index(Request $request)
+{
+    DB::enableQueryLog();
 
-        $genre = $request->query('genre', 'all');
-        $director = $request->query('director', 'all');
+    $genre = $request->query('genre', 'all');
+    $director = $request->query('director', 'all');
 
-        $query = Movie::with('genre');
+    $query = Movie::with('genre');
 
-        if ($genre !== 'all') {
-            $query->where('genre_id', $genre);
-        }
-
-        if ($director !== 'all') {
-            $query->where('director', $director);
-        }
-
-        $movies = $query->get();
-        $genres = Genre::all();
-
-        return view('movies.index', compact(
-            'movies',
-            'genres',
-            'genre',
-            'director'
-        ));
+    if ($genre !== 'all') {
+        $query->where('genre_id', $genre);
     }
+
+    if ($director !== 'all') {
+        $query->where('director', $director);
+    }
+
+    $movies = $query->get();
+    $genres = Genre::all();
+
+    return view('movies.index', compact(
+        'movies',
+        'genres',
+        'genre',
+        'director'
+    ));
+}
+
 
     public function create()
     {
@@ -67,11 +69,40 @@ class MovieController extends Controller
             ->with('success', 'Movie added successfully.');
     }
 
-    public function show(string $id)
+    public function show(Movie $movie)
     {
-        $movie = Movie::findOrFail($id);
-
         return view('movies.show', ['item' => $movie]);
+    }
+
+    public function edit(Movie $movie)
+    {
+        $genres = Genre::all();
+
+        return view('movies.edit', compact('movie', 'genres'))
+            ->with('directors', $this->directors);
+    }
+
+    public function update(Request $request, Movie $movie)
+    {
+        $validated = $request->validate([
+            'title' => 'required|max:255',
+            'director' => 'required|in:' . implode(',', $this->directors),
+            'genre_id' => 'required|exists:genres,id',
+            'year' => 'required|numeric|min:1900|max:2026',
+        ]);
+
+        $movie->update($validated);
+
+        return redirect()->route('movies.index')
+            ->with('success', 'Movie updated successfully.');
+    }
+
+    public function destroy(Movie $movie)
+    {
+        $movie->delete();
+
+        return redirect()->route('movies.index')
+            ->with('success', 'Movie deleted successfully.');
     }
 
     public function featured()
